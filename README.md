@@ -4,7 +4,7 @@ A contig scaffolding tool using algebraic rearrangements.
 
 Description
 ------------
-CSAR is a contig scaffolding tool that can scaffold the contigs of a draft genome (i.e., target genome) based on a complete or incomplete reference genome of a related organism.
+CSAR is a contig scaffolding tool that can efficiently and accurately scaffold the contigs of a draft genome (i.e., target genome) based on an incomplete reference genome of a related organism.
 
 System requirements
 ------------
