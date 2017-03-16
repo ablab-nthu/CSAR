@@ -8,7 +8,7 @@ CSAR is a contig scaffolding tool that can scaffold the contigs of a draft genom
 
 System requirements
 ------------
-CSAR is developed in PHP. When running, it requires the program NUCmer or PROmer from MUMmer's package to first identify conserved genetic markers between target and reference genomes and then use these markers to do its scaffolding job. To run CSAR, therefore, the following packages must be installed on your system and also available in your $PATH.
+CSAR is developed in PHP. When running, it requires the program NUCmer or PROmer from MUMmer's package to first identify conserved genetic markers between target and reference genomes and then uses these markers to do its scaffolding job. To run CSAR, therefore, the following packages must be installed on your system and also available in your $PATH.
 
 1. PHP (from 5.1.6): http://php.net/downloads.php
 2. MUMmer: http://mummer.sourceforge.net/
