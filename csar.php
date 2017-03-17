@@ -384,12 +384,7 @@ foreach($plus_strand as $i => $eachSet){
 	}
 	$scaffoldNum = $j+1;
 	
-	if($i == 0){
-		$outputFile = "scaffolds.$mum.csar";
-	}
-	else{
-		$outputFile = "reference_scaffolds.$mum.csar";
-	}
+	$outputFile = "scaffolds.$mum.csar";
 	file_put_contents("$outPath/$outputFile", $mergeContig_tmp[$i]);
 
 	if($outPutTargetOnly == 1){
@@ -453,9 +448,11 @@ if(isset($unmappedFile)){
 		}
 		if($unmapped == 1){
 			$scaffoldNum++;	
-			$unmappedContigs .= ">Scaffold_".$scaffoldNum." (unmapped contig)\n";
+		//	$unmappedContigs .= ">Scaffold_".$scaffoldNum." (unmapped contig)\n";
+			$unmappedContigs .= ">Scaffold_".$scaffoldNum."\n";
 			$unmappedContigs .= "$contigNameInD $plus_o\n\n";
-			$unmappedContigs_seq .= ">Scaffold_".$scaffoldNum." (unmapped contig)\n";
+		//	$unmappedContigs_seq .= ">Scaffold_".$scaffoldNum." (unmapped contig)\n";
+			$unmappedContigs_seq .= ">Scaffold_".$scaffoldNum."\n";
 			$unmappedContigs_seq .= $contigSeq[$contigNameInD]."\n";
 		}
 	}
