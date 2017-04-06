@@ -27,14 +27,14 @@ END;
 		exit();
 	}
 	else if($each == "-t"){
-		$draft1 = $argv[$k+1];
-		if(@substr(trim(file_get_contents($draft1)), 0, 1) != ">"){
+		$draft2 = $argv[$k+1];
+		if(@substr(trim(file_get_contents($draft2)), 0, 1) != ">"){
 			die("$meg\n$meg_h\n");
 		}
 	}
 	else if($each == "-r"){
-		$draft2 = $argv[$k+1];
-		if(@substr(trim(file_get_contents($draft2)), 0, 1) != ">"){
+		$draft1 = $argv[$k+1];
+		if(@substr(trim(file_get_contents($draft1)), 0, 1) != ">"){
 			die("$meg\n$meg_h\n");
 		}
 	}
@@ -60,18 +60,18 @@ if(!@mkdir($outPath) && !is_dir($outPath)){
 
 $mummerRunTime = 0;
 if(isset($mum)){
-	if(strstr($draft2, "/")){
-		$draft2CurrentPath = substr($draft2, strrpos($draft2, "/")+1);
+	if(strstr($draft1, "/")){
+		$draft1CurrentPath = substr($draft1, strrpos($draft1, "/")+1);
 	}
 	else{
-		$draft2CurrentPath = $draft2;
+		$draft1CurrentPath = $draft1;
 	}
 	$mummerStartTime = getMicrotime();
-	system($mum."mer $draft1 $draft2 -p $outPath/$draft2CurrentPath.".$mum);
-	system("delta-filter -r -q $outPath/$draft2CurrentPath.$mum.delta > $outPath/$draft2CurrentPath.$mum.filter");
-	system("show-coords -l -d $outPath/$draft2CurrentPath.$mum.filter > $outPath/$draft2CurrentPath.$mum.coords");
+	system($mum."mer $draft1 $draft2 -p $outPath/$draft1CurrentPath.".$mum);
+	system("delta-filter -r -q $outPath/$draft1CurrentPath.$mum.delta > $outPath/$draft1CurrentPath.$mum.filter");
+	system("show-coords -l -d $outPath/$draft1CurrentPath.$mum.filter > $outPath/$draft1CurrentPath.$mum.coords");
 	$mummerRunTime = round(getMicrotime() - $mummerStartTime, 3);
-	$coords = "$outPath/$draft2CurrentPath.$mum.coords";
+	$coords = "$outPath/$draft1CurrentPath.$mum.coords";
 }
 else{
 	die("$meg\n$meg_h\n");
@@ -209,7 +209,7 @@ foreach($lines2 as $contig_tag => $each_contig){
 $contigSet = array();
 $contigSet[0] = explode(">", $draft1_marker);
 $contigSet[1] = explode(">", $draft2_marker);
-$originMarkers = $contigSet[0];
+$originMarkers = $contigSet[1];
 
 // Check markers
 foreach($contigSet as $k => $set){
@@ -342,6 +342,8 @@ $outPutTargetOnly = 1;
 
 $plus_strand = array();
 foreach($contigSet as $i => $eachSet){
+	if($i == 0)	continue;
+	
 	foreach($eachSet as $j => $eachContig){
 		$markerNum = count($eachContig) / 2;
 		foreach($eachContig as $k => $marker){
@@ -354,9 +356,6 @@ foreach($contigSet as $i => $eachSet){
 			}
 		}
 	}
-	if($outPutTargetOnly == 1){
-		break;
-	}
 }
 
 $plus_o = "0";
@@ -365,6 +364,7 @@ $mergeContig_tmp[0] = "";
 $mergeContig_tmp[1] = "";
 
 foreach($plus_strand as $i => $eachSet){
+	if($i == 0)	continue;
 	$temp = "";
 	foreach($eachSet as $j => $eachContig){
 		$mergeContig_tmp[$i] .= ">Scaffold_".($j+1)."\n";
@@ -386,17 +386,13 @@ foreach($plus_strand as $i => $eachSet){
 	
 	$outputFile = "scaffolds.$mum.csar";
 	file_put_contents("$outPath/$outputFile", $mergeContig_tmp[$i]);
-
-	if($outPutTargetOnly == 1){
-		break;
-	}
 }
 
 // Generate the fasta seqence of scaffolds
 $genSeqTime = getMicrotime();
 
 $contigSeq = array();
-parse_contig($draft1);
+parse_contig($draft2);
 $list = file("$outPath/$outputFile");
 $fasta = "";
 
@@ -430,7 +426,7 @@ $unmappedFile = 1;
 if(isset($unmappedFile)){
 	$unmappedContigs = "";
 	$unmappedContigs_seq = "";
-	$draftContig = file_get_contents($draft1);
+	$draftContig = file_get_contents($draft2);
 	$draftContig = explode(">", $draftContig);
 	$n = 0;
 	foreach($draftContig as $eachInDraft){
