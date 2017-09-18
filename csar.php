@@ -3,7 +3,7 @@
 /* CSAR v1.1 */
 ini_set('memory_limit', -1);
 $totalTimeStart = getMicrotime();
-$opt = getopt("t:r:o:h", array('nuc', 'pro', 'dotplot', 'time', 'coords:', 'c1:', 'c2:', 'debug', 'more', 'unmap'));
+$opt = getopt("t:r:o:h", array('nuc', 'pro', 'dotplot', 'time', 'coords:', 'c1:', 'c2:', 'debug', 'more'));
 $meg = 'Usage: php csar.php [option] -t <target_contigs.fna file> -r <reference.fna file> [--nuc, --pro]';
 $meg_h = 'Using option \'-h\' for help';
 
@@ -61,7 +61,6 @@ if(!@mkdir($outPath, 0777, true) && !is_dir($outPath)){
 
 $debug = isset($opt['debug']) ? 1 : 0;
 $moreFile = isset($opt['more']) ? 1 : 0;
-$genUnmapped = isset($opt['unmap']) ? 1 : 0;
 
 if(isset($useContig)){
 	$mummerRunTime = 0;
@@ -416,7 +415,8 @@ if($target != ''){
 	if($genFnaFile == 1){
 		genFnaFile($target, $outputFile_target);
 	}
-
+	
+	$genUnmapped = 1;
 	if($genUnmapped == 1){
 		genUnmappedFile($target, $tar_originMarkers, $scaffoldNum[1], $outputFile_target, '');
 	}
@@ -800,9 +800,11 @@ function genUnmappedFile($draftFileName, $originMarkers, $scaffoldNum, $outputFi
 		}
 		if($unmapped == 1){
 			$scaffoldNum++;	
-			$unmappedContigs .= ">".$refPrefix."Scaffold_".$scaffoldNum."_(unmapped_contig)\n";
+		//	$unmappedContigs .= ">".$refPrefix."Scaffold_".$scaffoldNum."_(unmapped_contig)\n";
+			$unmappedContigs .= ">".$refPrefix."Scaffold_".$scaffoldNum."\n";
 			$unmappedContigs .= "$contigNameInD $plus_o\n\n";
-			$unmappedContigs_seq .= ">".$refPrefix."Scaffold_".$scaffoldNum."_(unmapped_contig)\n";
+		//	$unmappedContigs_seq .= ">".$refPrefix."Scaffold_".$scaffoldNum."_(unmapped_contig)\n";
+			$unmappedContigs_seq .= ">".$refPrefix."Scaffold_".$scaffoldNum."\n";
 			$unmappedContigs_seq .= $contigSeq[$contigNameInD]."\n";
 		}
 	}
