@@ -28,18 +28,18 @@ Options of running CSAR:
 
 -r <string>   Reference genome
 
--nuc          Use NUCmer to identify conserved genetic markers between target and reference genomes
+--nuc         Use NUCmer to identify conserved genetic markers between target and reference genomes
  
--pro          Use PROmer to identify conserved genetic markers between target and reference genomes
+--pro         Use PROmer to identify conserved genetic markers between target and reference genomes
 
--o <string>   Output folder to contain all the files returned by running CSAR
+-o <string>   Output folder to contain all the files returned by running CSAR (default: ./csar_out)
 
 -h            Show help message
 
 ```
-Note that the target and reference genomes should be prepared in multi-FASTA format and if the -o option is omitted, then the current working folder is used. The following is an example of running CSAR.
+Note that the target and reference genomes should be prepared in multi-FASTA format, and either --nuc or --pro but not both shall be used in one command line. If the -o option is omitted, then a ./csar_out is used as default. The following is an example of running CSAR.
 
-	php csar.php -t example/M.luteus_contigs.fna -r example/GCA_001691605.1_reference.fna -nuc -o example_output
+	php csar.php -t example/M.luteus_contigs.fna -r example/GCA_001691605.1_reference.fna --nuc -o example_output
 	
 Output
 ------
