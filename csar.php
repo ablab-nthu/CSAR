@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-/* CSAR v1.1 */
+/* CSAR v1.1.1 */
 ini_set('memory_limit', -1);
 $totalTimeStart = getMicrotime();
 $opt = getopt("t:r:o:h", array('nuc', 'pro', 'dotplot', 'time', 'coords:', 'c1:', 'c2:', 'debug', 'more'));
@@ -339,20 +339,17 @@ $CSAR_RunTime = round(getMicrotime() - $CSAR_StartTime, 3);
 //======================================
 // 3. Output
 //======================================
-// Get the plus strand
+// Get the plus strands
 $stepTime[3] = getMicrotime();
 $plus_strand = array();
-foreach($contigSet as $i => $eachSet){
-	if($i == 0) continue;
-	foreach($eachSet as $j => $eachContig){
-		$markerNum = count($eachContig) / 2;
-		foreach($eachContig as $k => $marker){
-			foreach($telomere[$i] as $eachTelomere){
-				if($marker == $eachTelomere){
-					$plus_strand[$i][$j] = rotate_toBegin($eachContig, $k);
-					array_splice($plus_strand[$i][$j], 0, $markerNum);
-					break(2);
-				}
+foreach($contigSet[1] as $j => $eachContig){
+	$markerNum = count($eachContig) / 2;
+	foreach($eachContig as $k => $marker){
+		foreach($telomere[1] as $eachTelomere){
+			if($marker == $eachTelomere){
+				$plus_strand[1][$j] = rotate_toBegin($eachContig, $k);
+				array_splice($plus_strand[1][$j], $markerNum);
+				break(2);
 			}
 		}
 	}
@@ -360,47 +357,48 @@ foreach($contigSet as $i => $eachSet){
 
 $plus_o = '0';
 $minus_o = '1';
-$mergeContig_tmp[0] = '';
-$mergeContig_tmp[1] = '';
-$scaffoldNum[0] = 0;
-$scaffoldNum[1] = 0;
-$scaffolds = array();
+$scaffoldNum = 0;
 
-usort($plus_strand[1], 'cmp_arrSize');
-
-foreach($plus_strand as $i => $eachSet){
-	if($i == 0) continue;
-	$temp = '';
-	$i == 0 ? $refPrefix = 'ref.' : $refPrefix = ''; 
-	foreach($eachSet as $j => $eachContig){
-		$mergeContig_tmp[$i] .= '>'.$refPrefix.'Scaffold_'.($j+1)."\n";
-		foreach($eachContig as $marker){
-			@$tagTmp = $contigTag[$i][$marker];
-			@$tagTmpN = $contigTag[$i][$marker*-1];
-			if(isset($tagTmp) && $tagTmp != $temp){
-				$mergeContig_tmp[$i] .= $tagTmp." $plus_o\n";
-				array_push($scaffolds, "$tagTmp $plus_o");
-				$temp = $tagTmp;
-			}
-			else if(isset($tagTmpN) && $tagTmpN != $temp){
-				$mergeContig_tmp[$i] .= $tagTmpN." $minus_o\n";
-				array_push($scaffolds, "$tagTmpN $minus_o");
-				$temp = $tagTmpN;
-			}
+$temp = '';
+foreach($plus_strand[1] as $j => $eachContig){
+	$k = $j+1;
+	$major_ori = 0;
+	$scaffold[$k] = array();
+	foreach($eachContig as $marker){
+		@$tagTmp = $contigTag[1][$marker];
+		@$tagTmpN = $contigTag[1][$marker*-1];
+		if(isset($tagTmp) && $tagTmp != $temp){
+			array_push($scaffold[$k], "$tagTmp $plus_o");
+			$temp = $tagTmp;
+			$major_ori++;
 		}
-		$mergeContig_tmp[$i] .= "\n";
+		else if(isset($tagTmpN) && $tagTmpN != $temp){
+			array_push($scaffold[$k], "$tagTmpN $minus_o");
+			$temp = $tagTmpN;
+			$major_ori--;
+		}
 	}
-	$scaffoldNum[$i] = $j+1;
-	
-	if($i == 0){
-		$outputFile_ref = "$outPath/reference_scaffolds.$mumOptSuf.csar";
-		file_put_contents($outputFile_ref, $mergeContig_tmp[$i]);
-	}
-	else{
-		$outputFile_target = "$outPath/scaffolds.$mumOptSuf.csar";
-		file_put_contents($outputFile_target, $mergeContig_tmp[$i]);
+	//flip scaffolds to be plus in majority
+	if($major_ori < 0){
+		$scaffold[$k] = flip_scaffold($scaffold[$k]);
 	}
 }
+$scaffoldNum = $j+1;
+
+usort($scaffold, 'cmp_arrSize');
+
+$all_scaffolds = '';
+foreach($scaffold as $i => $scaffold_each){
+	$all_scaffolds .= '>Scaffold_'.($i+1)."\n";
+	foreach($scaffold_each as $line){
+		$all_scaffolds .= "$line\n";
+	}
+	$all_scaffolds .= "\n";
+}
+
+$outputFile_target = "$outPath/scaffolds.$mumOptSuf.csar";
+file_put_contents($outputFile_target, $all_scaffolds);
+
 $stepTime[3] = round(getMicrotime() - $stepTime[3], 3);
 //p("stepTime 3: $stepTime[3]");
 
@@ -418,7 +416,7 @@ if($target != ''){
 	
 	$genUnmapped = 1;
 	if($genUnmapped == 1){
-		genUnmappedFile($target, $tar_originMarkers, $scaffoldNum[1], $outputFile_target, '');
+		genUnmappedFile($target, $tar_originMarkers, $scaffoldNum, $outputFile_target, '');
 	}
 	$genSeqTime = round((getMicrotime() - $genSeqTime), 3);
 
@@ -882,6 +880,24 @@ function judge_dir($coords){
 	else{
 		return -1;
 	}
+}
+
+function flip_scaffold($scaffold){
+	if($scaffold[0][0] == '>'){
+		$scaffold_name = $scaffold[0];
+		array_shift($scaffold);
+	}
+
+	$scaffold = array_reverse($scaffold);
+	foreach($scaffold as $k => $contig){
+		list($contig_name, $ori) = preg_split('/ +/', $contig);
+		$scaffold[$k] = $contig_name.' '.(1-intval($ori));
+	}
+
+	if(isset($scaffold_name))
+		array_unshift($scaffold, $scaffold_name);
+
+	return $scaffold;
 }
 
 function cmp($a, $b){
