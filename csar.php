@@ -206,8 +206,6 @@ if($moreFile == 1){
 	file_put_contents("$outPath/$coords".'_tar.contigs', $target_marker); 
 }
 
-//p("getMarkerTime:");
-//print_r($getMarkerTime);
 useContig:
 //======================================
 // Load markers of contigs
@@ -355,35 +353,42 @@ foreach($contigSet[1] as $j => $eachContig){
 	}
 }
 
+
 $plus_o = '0';
 $minus_o = '1';
 $scaffoldNum = 0;
 
 $temp = '';
-foreach($plus_strand[1] as $j => $eachContig){
-	$k = $j+1;
+foreach($plus_strand[1] as $i => $eachContig){
+	$j = $i+1;
 	$major_ori = 0;
-	$scaffold[$k] = array();
+	$scaffold[$j] = array();
 	foreach($eachContig as $marker){
 		@$tagTmp = $contigTag[1][$marker];
 		@$tagTmpN = $contigTag[1][$marker*-1];
+
 		if(isset($tagTmp) && $tagTmp != $temp){
-			array_push($scaffold[$k], "$tagTmp $plus_o");
+			array_push($scaffold[$j], "$tagTmp $plus_o");
 			$temp = $tagTmp;
 			$major_ori++;
 		}
 		else if(isset($tagTmpN) && $tagTmpN != $temp){
-			array_push($scaffold[$k], "$tagTmpN $minus_o");
+			array_push($scaffold[$j], "$tagTmpN $minus_o");
 			$temp = $tagTmpN;
 			$major_ori--;
 		}
 	}
 	//flip scaffolds to be plus in majority
-	if($major_ori < 0){
-		$scaffold[$k] = flip_scaffold($scaffold[$k]);
+	if(0 && $major_ori < 0){
+		$scaffold[$j] = flip_scaffold($scaffold[$j]);
+	}
+
+	//flip scaffolds according to the orientation of the first marker
+	if($eachContig[0] < 0){
+		$scaffold[$j] = flip_scaffold($scaffold[$j]);
 	}
 }
-$scaffoldNum = $j+1;
+$scaffoldNum = $i+1;
 
 usort($scaffold, 'cmp_arrSize');
 
@@ -584,8 +589,6 @@ function product($a, $b){
 		array_push($temp, $markers[0]);
 		$a_mapping += array_combine($markers, $temp);
 	}
-//	print "a_mapping\n";
-//	print_r($a_mapping);
 
 	$numMarkers = 0;
 	$temp = array();
@@ -599,7 +602,6 @@ function product($a, $b){
 			$numMarkers++;
 		}
 	}
-//	print "ProductRunTime: ".(getMicrotime() - $runTime)."\n";
 
 	// generate the product
 	$prod = array();
@@ -607,7 +609,6 @@ function product($a, $b){
 	$i = 0;
 //	p("numMarkers: $numMarkers");
 	while($i < $numMarkers){
-	//	print "i: $i\n";
 		foreach($b_mapping as $k => $marker){
 			$m = isset($nextMarker) ? $nextMarker : $k;
 			array_push($temp, $m);
